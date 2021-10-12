@@ -1,0 +1,20 @@
+spring:
+  datasource:
+    username: root
+    url: jdbc:mysql://localhost:3306/miniproj2
+    password: root
+  sql:
+    init:
+      mode: always
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL5InnoDBDialect
+    show-sql: 'true'
+    hibernate:
+      ddl-auto: update
+server:
+  port: '8082'
+jwt:
+  secret: admin
+  expiration: admin
