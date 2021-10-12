@@ -1,0 +1,63 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: order-service
+  labels:
+    name: order-service
+spec:
+  ports:
+    - nodePort: 30165 
+      port: 9002      
+      targetPort: 9002  
+      protocol: TCP
+  selector:           
+    app: order-service
+  type: NodePort       
+
+---
+apiVersion: apps/v1 
+kind: Deployment    
+metadata:              
+  name: order-service
+spec:                
+  selector:         
+    matchLabels:
+      app: order-service
+  replicas: 2        
+  template:
+    metadata:
+      labels:        
+        app: order-service
+    spec:
+      containers:
+        - name: order-service
+          image: undral23/order-service
+          ports:
+            - containerPort: 9002                
+          env:   # Setting Enviornmental Variables
+          - name: DB_HOST   # Setting Database host address from configMap
+            valueFrom: 
+              configMapKeyRef:
+                name: order-db-conf  # name of configMap
+                key: host
+          - name: DB_NAME  # Setting Database name from configMap
+            valueFrom:
+              configMapKeyRef:
+                name: order-db-conf 
+                key: name
+          - name: DB_USERNAME  # Setting Database username from Secret
+            valueFrom:
+              secretKeyRef:
+                name: order-secret # Secret Name
+                key: username
+          - name: DB_PASSWORD # Setting Database password from Secret
+            valueFrom:
+              secretKeyRef:
+                name: order-secret
+                key: password     
+          - name: JWT_SECRET # Setting Database password from Secret
+            valueFrom:
+              secretKeyRef:
+                name: jwt-secret
+                key: value   
+        
