@@ -1,0 +1,58 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: account-service
+  labels:
+    name: account-service
+spec:
+  ports:
+    - nodePort: 30163 
+      port: 8082      
+      targetPort: 8082  
+      protocol: TCP
+  selector:           
+    app: account-service
+  type: NodePort       
+
+---
+apiVersion: apps/v1 
+kind: Deployment    
+metadata:              
+  name: account-service
+spec:                
+  selector:         
+    matchLabels:
+      app: account-service
+  replicas: 2        
+  template:
+    metadata:
+      labels:        
+        app: account-service
+    spec:
+      containers:
+        - name: account-service
+          image: undral23/account-service
+          ports:
+            - containerPort: 8082                
+          env:   # Setting Enviornmental Variables
+          - name: DB_HOST   # Setting Database host address from configMap
+            valueFrom: 
+              configMapKeyRef:
+                name: account-db-conf  # name of configMap
+                key: host
+          - name: DB_NAME  # Setting Database name from configMap
+            valueFrom:
+              configMapKeyRef:
+                name: account-db-conf 
+                key: name
+          - name: DB_USERNAME  # Setting Database username from Secret
+            valueFrom:
+              secretKeyRef:
+                name: account-secret # Secret Name
+                key: username
+          - name: DB_PASSWORD # Setting Database password from Secret
+            valueFrom:
+              secretKeyRef:
+                name: account-secret
+                key: password     
+        

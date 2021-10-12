@@ -1,8 +1,0 @@
-DROP TABLE IF EXISTS account;
-CREATE TABLE account (
-id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-username VARCHAR(255) NOT NULL,
-last_name VARCHAR(255),
-email VARCHAR(255) NOT NULL,
-shipping_address TEXT,
-password VARCHAR(255) );
