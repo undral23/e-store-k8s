@@ -1,0 +1,19 @@
+server:
+  port: 9002
+
+spring:
+  application:
+    name: TRANSACTION-CARD-SERVICE
+
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://eureka:8761/eureka/
+  instance:
+    hostname: localhost
+
+
+jwt:
+  secret: admin
