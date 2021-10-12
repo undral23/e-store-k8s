@@ -2,12 +2,12 @@ package edu.miu.sa.order.service;
 
 import java.util.List;
 
-import edu.miu.sa.order.entity.Order;
-import edu.miu.sa.order.repository.OrderRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import edu.miu.sa.order.entity.Order;
+import edu.miu.sa.order.repository.OrderRepository;
 import lombok.extern.slf4j.Slf4j;
 
 @Service

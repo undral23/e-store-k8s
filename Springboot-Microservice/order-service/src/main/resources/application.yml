@@ -5,28 +5,20 @@ spring:
   application:
     name: ORDER-SERVICE
   datasource:
-    username: sa
-    url: jdbc:h2:mem:testdb
-    driverClassName: org.h2.Driver
-    password: ''
-  jpa:
-    database-platform: org.hibernate.dialect.H2Dialect
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://${DB_HOST}/${DB_NAME}?useSSL=false
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    hikari:
+      initialization-fail-timeout: 0
+    initialization-mode: ALWAYS
 
-#  datasource:
-#    driver-class-name: com.mysql.cj.jdbc.Driver
-#    url: jdbc:mysql://${DB_HOST}/${DB_NAME}?useSSL=false
-#    username: ${DB_USERNAME}
-#    password: ${DB_PASSWORD}
-#    hikari:
-#      initialization-fail-timeout: 0
-#    initialization-mode: ALWAYS
-#
-#  jpa:
-#     database-platform: org.hibernate.dialect.MySQL5Dialect
-#     generate-ddl: true
-#     show-sql: true
-#     hibernate:
-#       ddl-auto: create
+  jpa:
+     database-platform: org.hibernate.dialect.MySQL5Dialect
+     generate-ddl: true
+     show-sql: true
+     hibernate:
+       ddl-auto: create
 
 eureka:
   client:
@@ -37,6 +29,5 @@ eureka:
   instance:
     hostname: localhost
 
-
 jwt:
-  secret: admin
+  secret: ${JWT_SECRET}
