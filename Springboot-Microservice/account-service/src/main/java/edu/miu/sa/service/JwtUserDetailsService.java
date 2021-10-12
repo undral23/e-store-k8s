@@ -22,4 +22,8 @@ public class JwtUserDetailsService implements UserDetailsService {
 				.orElseThrow(() -> new UsernameNotFoundException("User Not Found with username: " + username));
 		return UserDetailsImpl.build(user);
 	}
+
+	public void updateUser(User user) {
+		userRepository.save(user);
+	}
 }
