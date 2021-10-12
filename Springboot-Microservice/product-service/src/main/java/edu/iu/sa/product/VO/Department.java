@@ -1,4 +1,4 @@
-package com.dailycodebuffer.user.VO;
+package edu.iu.sa.product.VO;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

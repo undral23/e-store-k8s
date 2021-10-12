@@ -25,7 +25,15 @@ spring:
               args:
                 name: DEPARTMENT-SERVICE
                 fallbackuri: forward:/departmentServiceFallBack
-
+        - id: ACCOUNT-SERVICE
+          uri: lb://ACCOUNT-SERVICE
+          predicates:
+            - Path=/authenticate, /signup
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: ACCOUNT-SERVICE
+                fallbackuri: forward:/userServiceFallBack
 
 hystrix:
   command:
@@ -41,4 +49,3 @@ management:
     web:
       exposure:
         include: hystrix.stream
-

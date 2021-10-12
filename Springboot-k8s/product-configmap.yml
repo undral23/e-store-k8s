@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: product-db-conf
+data:
+ host: product-mysql
+ name: product
