@@ -23,7 +23,13 @@ public class JwtUserDetailsService implements UserDetailsService {
 		return UserDetailsImpl.build(user);
 	}
 
+	@Transactional
 	public void updateUser(User user) {
-		userRepository.save(user);
+		User detail = userRepository.findById(user.getId()).get();
+		if (detail != null) {
+			detail.setPreferredMethod(user.getPreferredMethod());
+			detail.setPaymentMethods(user.getPaymentMethods());
+			userRepository.save(detail);
+		}
 	}
 }

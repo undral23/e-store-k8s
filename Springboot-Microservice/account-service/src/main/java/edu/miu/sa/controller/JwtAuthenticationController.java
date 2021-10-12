@@ -83,7 +83,7 @@ public class JwtAuthenticationController {
 	}
 
 	@PutMapping("/account")
-	public void updateUser(User user) {
+	public void updateUser(@RequestBody User user) {
 		userDetailsService.updateUser(user);
 	}
 }
