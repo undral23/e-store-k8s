@@ -1,0 +1,60 @@
+server:
+  port: 9191
+
+spring:
+  application:
+    name: PAYMENT-SERVICE
+  cloud:
+    gateway:
+      routes:
+        - id: TRANSACTION-CARD-SERVICE
+          uri: lb://TRANSACTION-CARD-SERVICE
+          predicates:
+            - Path=/payment/card/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: TRANSACTION-CARD-SERVICE
+                fallbackuri: forward:/serviceFallBack
+        - id: TRANSACTION-PAYPAL-SERVICE
+          uri: lb://TRANSACTION-PAYPAL-SERVICE
+          predicates:
+            - Path=/payment/paypal/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: TRANSACTION-PAYPAL-SERVICE
+                fallbackuri: forward:/serviceFallBack
+        - id: TRANSACTION-BANK-SERVICE
+          uri: lb://TRANSACTION-BANK-SERVICE
+          predicates:
+            - Path=/payment/bank/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: TRANSACTION-BANK-SERVICE
+                fallbackuri: forward:/serviceFallBack
+
+hystrix:
+  command:
+    fallbackcmd:
+      execution:
+        isolation:
+          thread:
+            timeoutInMilliseconds: 4000
+
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: hystrix.stream
+
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://eureka:8761/eureka/
+  instance:
+    hostname: payment-service
