@@ -1,0 +1,63 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: shipping-service
+  labels:
+    name: shipping-service
+spec:
+  ports:
+    - nodePort: 30167
+      port: 9002      
+      targetPort: 9002  
+      protocol: TCP
+  selector:           
+    app: shipping-service
+  type: NodePort       
+
+---
+apiVersion: apps/v1 
+kind: Deployment    
+metadata:              
+  name: shipping-service
+spec:                
+  selector:         
+    matchLabels:
+      app: shipping-service
+  replicas: 2        
+  template:
+    metadata:
+      labels:        
+        app: shipping-service
+    spec:
+      containers:
+        - name: shipping-service
+          image: undral23/shipping-service
+          ports:
+            - containerPort: 9002                
+          env:   # Setting Enviornmental Variables
+          - name: DB_HOST   # Setting Database host address from configMap
+            valueFrom: 
+              configMapKeyRef:
+                name: shipping-db-conf  # name of configMap
+                key: host
+          - name: DB_NAME  # Setting Database name from configMap
+            valueFrom:
+              configMapKeyRef:
+                name: shipping-db-conf 
+                key: name
+          - name: DB_USERNAME  # Setting Database username from Secret
+            valueFrom:
+              secretKeyRef:
+                name: shipping-secret # Secret Name
+                key: username
+          - name: DB_PASSWORD # Setting Database password from Secret
+            valueFrom:
+              secretKeyRef:
+                name: shipping-secret
+                key: password     
+          - name: JWT_SECRET # Setting Database password from Secret
+            valueFrom:
+              secretKeyRef:
+                name: jwt-secret
+                key: value   
+        

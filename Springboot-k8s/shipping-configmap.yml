@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: shipping-db-conf
+data:
+ host: shipping-mysql
+ name: shipping
