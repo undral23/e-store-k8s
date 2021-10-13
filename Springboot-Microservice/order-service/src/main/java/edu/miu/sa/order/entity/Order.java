@@ -32,6 +32,9 @@ public class Order {
     @Column(nullable = false)
     private OrderStatus status;
 
+    @Transient
+    private Object shippingInfo;
+
     public Long getId() {
         return id;
     }
@@ -86,5 +89,13 @@ public class Order {
 
     public void setStatus(OrderStatus status) {
         this.status = status;
+    }
+
+    public Object getShippingInfo() {
+        return shippingInfo;
+    }
+
+    public void setShippingInfo(Object shippingInfo) {
+        this.shippingInfo = shippingInfo;
     }
 }
