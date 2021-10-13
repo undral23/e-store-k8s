@@ -11,12 +11,26 @@ public class Order {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
+    @Column(nullable = false)
+//    @Temporal(TemporalType.TIMESTAMP)
     private LocalDateTime dateTime;
 
+    @Column(nullable = false)
     private Long userId;
 
     @OneToMany(cascade = CascadeType.ALL)
     private Collection<OrderItem> items;
+
+    @Embedded
+    @Column(nullable = false)
+    private Address shippingAddress;
+
+    @Embedded
+    @Column(nullable = false)
+    private PaymentInfo paymentInfo;
+
+    @Column(nullable = false)
+    private OrderStatus status;
 
     public Long getId() {
         return id;
@@ -48,5 +62,29 @@ public class Order {
 
     public void setItems(Collection<OrderItem> items) {
         this.items = items;
+    }
+
+    public Address getShippingAddress() {
+        return shippingAddress;
+    }
+
+    public void setShippingAddress(Address shippingAddress) {
+        this.shippingAddress = shippingAddress;
+    }
+
+    public PaymentInfo getPaymentInfo() {
+        return paymentInfo;
+    }
+
+    public void setPaymentInfo(PaymentInfo paymentInfo) {
+        this.paymentInfo = paymentInfo;
+    }
+
+    public OrderStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(OrderStatus status) {
+        this.status = status;
     }
 }

@@ -5,11 +5,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import edu.miu.sa.order.entity.Order;
 import edu.miu.sa.order.service.OrderService;
@@ -20,23 +16,22 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class OrderController {
 
-	@Autowired
-	private OrderService orderService;
+    @Autowired
+    private OrderService orderService;
 
-	@PostMapping
-	public Order saveOrder(@RequestBody Order order, Authentication auth) {
-		String userId = (String) auth.getPrincipal();
-		log.info("Inside saveOrder of OrderController");
-		log.info("userId: " + userId);
-		order.setUserId(Long.parseLong(userId));
-		order.setDateTime(LocalDateTime.now());
-		return orderService.saveOrder(order);
-	}
+    @PostMapping
+    public Order saveOrder(@RequestBody Order order, Authentication auth, @RequestHeader("Authorization") String token) {
+        String userId = (String) auth.getPrincipal();
+        log.info("Inside saveOrder of OrderController");
+        log.info("userId: " + userId);
 
-	@GetMapping
-	public List<Order> getAll() {
-		return orderService.getAll();
-	}
+        return orderService.saveOrder(order, Long.parseLong(userId), token);
+    }
+
+    @GetMapping
+    public List<Order> getAll() {
+        return orderService.getAll();
+    }
 
 //	@GetMapping("/{id}")
 //	public ResponseTemplateVO getUserWithDepartment(@PathVariable("id") Long userId) {
