@@ -1,11 +1,14 @@
 package edu.miu.sa.order.service;
 
+import java.lang.reflect.ParameterizedType;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import edu.miu.sa.order.entity.OrderStatus;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -57,7 +60,8 @@ public class OrderService {
         HttpEntity<Object> entityReq = new HttpEntity<Object>(order.getPaymentInfo().getData(), headers);
 
 
-        ResponseEntity<Object> result = restTemplate
+        ResponseEntity<Object> result;
+        result = restTemplate
 //                .postForEntity("http://TRANSACTION-CARD-SERVICE/payment/",
                 .postForEntity("http://localhost:9003/transaction/card",
                         entityReq,
@@ -65,6 +69,9 @@ public class OrderService {
 
         if (result.getStatusCode() == HttpStatus.OK) {
             order.setStatus(OrderStatus.PAID);
+            Map<String, Object> resBody = (Map<String, Object>) result.getBody();
+            order.getPaymentInfo().getData().put("transactionNumber", resBody.get("transactionNumber"));
+
             log.info("Payment successful!");
         } else {
             order.setStatus(OrderStatus.PAYMENT_FAILED);

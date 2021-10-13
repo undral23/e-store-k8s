@@ -22,11 +22,14 @@ public class CardTransactionController {
         log.info("Inside doTransaction of CardTransactionController");
         log.info("userId: " + userId);
 
+        txnData.put("transactionNumber", System.currentTimeMillis());
+
         log.info("====== Txn Data =======");
         for (String key : txnData.keySet()) {
             log.info(key + " : " + txnData.get(key));
         }
         log.info("=======================");
+
         return ResponseEntity.ok(txnData);
     }
 }
