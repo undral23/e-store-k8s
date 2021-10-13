@@ -24,6 +24,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class OrderService {
 
+    final static String PAYMENT_SERVICE_URL = "http://localhost:9003/transaction/card"; // "http://TRANSACTION-CARD-SERVICE/payment/";
+    final static String SHIPPING_SERVICE_URL = "http://localhost:9003/shipping"; // "http://SHIPPING-SERVICE/shipping/";
+
     @Autowired
     private OrderRepository orderRepository;
 
@@ -42,6 +45,9 @@ public class OrderService {
         doPayment(order, token);
 
         // place of the shipment
+        if(order.getStatus() == OrderStatus.PAID) {
+            doShipRequest(order, token);
+        }
 
         return order;
     }
@@ -62,8 +68,7 @@ public class OrderService {
 
         ResponseEntity<Object> result;
         result = restTemplate
-//                .postForEntity("http://TRANSACTION-CARD-SERVICE/payment/",
-                .postForEntity("http://localhost:9003/transaction/card",
+                .postForEntity(PAYMENT_SERVICE_URL,
                         entityReq,
                         Object.class);
 
@@ -76,6 +81,39 @@ public class OrderService {
         } else {
             order.setStatus(OrderStatus.PAYMENT_FAILED);
             log.info("Payment failed: " + result.getBody());
+        }
+
+        return orderRepository.save(order);
+    }
+
+    public Object doShipRequest(Order order, String token) {
+        log.info("Inside doShipRequest of OrderService, OrderID: " + order.getId());
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", token);
+
+        order.getPaymentInfo().getData().put("amount", order.getPaymentInfo().getAmount());
+
+        Map<String, Object> reqData = new HashMap<>();
+        reqData.put("orderId", order.getId());
+        reqData.put("shippingAddress", order.getShippingAddress());
+
+        HttpEntity<Object> entityReq = new HttpEntity<Object>(reqData, headers);
+
+        ResponseEntity<Object> result;
+        result = restTemplate
+                .postForEntity(SHIPPING_SERVICE_URL,
+                        entityReq,
+                        Object.class);
+
+        if (result.getStatusCode() == HttpStatus.OK) {
+            order.setStatus(OrderStatus.PAID);
+            Map<String, Object> resBody = (Map<String, Object>) result.getBody();
+            order.setShippingInfo(resBody);
+            log.info("Shipping request successful!");
+        } else {
+            order.setStatus(OrderStatus.PAYMENT_FAILED);
+            log.info("Shipping request failed: " + result.getBody());
         }
 
         return orderRepository.save(order);
