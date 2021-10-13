@@ -1,2 +1,1 @@
-# Springboot-k8s
-Springboot-k8s
+Kubernetes configuretion files
