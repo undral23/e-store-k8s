@@ -5,12 +5,10 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.web.client.RestTemplate;
 
 @SpringBootApplication
 @ComponentScan("edu.miu.sa")
-@EnableJpaRepositories("edu.miu.sa")
 //@EntityScan("edu.miu.sa.entity")
 public class CardTransactionServiceApplication {
 

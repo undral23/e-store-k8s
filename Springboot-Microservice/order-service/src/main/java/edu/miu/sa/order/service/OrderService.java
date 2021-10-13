@@ -1,8 +1,15 @@
 package edu.miu.sa.order.service;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
+import edu.miu.sa.order.entity.OrderStatus;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -14,20 +21,58 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class OrderService {
 
-	@Autowired
-	private OrderRepository orderRepository;
+    @Autowired
+    private OrderRepository orderRepository;
 
-	@Autowired
-	private RestTemplate restTemplate;
+    @Autowired
+    private RestTemplate restTemplate;
 
-	public Order saveOrder(Order product) {
-		log.info("Inside saveUser of UserService");
-		return orderRepository.save(product);
-	}
+    public Order saveOrder(Order order, Long userId, String token) {
+        log.info("Inside saveUser of UserService");
 
-	public List<Order> getAll() {
-		return orderRepository.findAll();
-	}
+        order.setUserId(userId);
+        order.setDateTime(LocalDateTime.now());
+        order.setStatus(OrderStatus.PLACED);
+        order = orderRepository.save(order);
+
+        // doing payment
+        doPayment(order, token);
+
+        // place of the shipment
+
+        return order;
+    }
+
+    public List<Order> getAll() {
+        return orderRepository.findAll();
+    }
+
+    public Object doPayment(Order order, String token) {
+        log.info("Inside doPayment of OrderService, OrderID: " + order.getId());
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", token);
+
+        order.getPaymentInfo().getData().put("amount", order.getPaymentInfo().getAmount());
+        HttpEntity<Object> entityReq = new HttpEntity<Object>(order.getPaymentInfo().getData(), headers);
+
+
+        ResponseEntity<Object> result = restTemplate
+//                .postForEntity("http://TRANSACTION-CARD-SERVICE/payment/",
+                .postForEntity("http://localhost:9003/transaction/card",
+                        entityReq,
+                        Object.class);
+
+        if (result.getStatusCode() == HttpStatus.OK) {
+            order.setStatus(OrderStatus.PAID);
+            log.info("Payment successful!");
+        } else {
+            order.setStatus(OrderStatus.PAYMENT_FAILED);
+            log.info("Payment failed: " + result.getBody());
+        }
+
+        return orderRepository.save(order);
+    }
 
 //	public ResponseTemplateVO getUserWithDepartment(Long userId) {
 //		log.info("Inside getUserWithDepartment of UserService");

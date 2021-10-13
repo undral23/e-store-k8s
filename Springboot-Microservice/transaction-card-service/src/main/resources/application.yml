@@ -1,9 +1,15 @@
 server:
-  port: 9002
+  port: 9003
 
 spring:
   application:
     name: TRANSACTION-CARD-SERVICE
+
+  datasource:
+    username: sa
+    url: jdbc:h2:mem:testdb
+    driverClassName: org.h2.Driver
+    password: ''
 
 eureka:
   client:
