@@ -1,0 +1,43 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: transaction-card-service
+  labels:
+    name: transaction-card-service
+spec:
+  ports:
+    - nodePort: 30166 
+      port: 9003      
+      targetPort: 9003  
+      protocol: TCP
+  selector:           
+    app: transaction-card-service
+  type: NodePort       
+
+---
+apiVersion: apps/v1 
+kind: Deployment    
+metadata:              
+  name: transaction-card-service
+spec:                
+  selector:         
+    matchLabels:
+      app: transaction-card-service
+  replicas: 2        
+  template:
+    metadata:
+      labels:        
+        app: transaction-card-service
+    spec:
+      containers:
+        - name: transaction-card-service
+          image: undral23/transaction-card-service
+          ports:
+            - containerPort: 9003                
+          env:   # Setting Enviornmental Variables 
+          - name: JWT_SECRET # Setting Database password from Secret
+            valueFrom:
+              secretKeyRef:
+                name: jwt-secret
+                key: value   
+        

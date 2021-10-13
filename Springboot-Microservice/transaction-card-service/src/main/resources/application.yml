@@ -18,8 +18,8 @@ eureka:
     service-url:
       defaultZone: http://eureka:8761/eureka/
   instance:
-    hostname: localhost
+    hostname: transaction-card-service
 
 
 jwt:
-  secret: admin
+  secret: ${JWT_SECRET}

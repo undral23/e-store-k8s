@@ -1,5 +1,6 @@
 server:
   port: '8082'
+
 jwt:
-  secret: admin
-  expiration: admin
+  secret: ${JWT_SECRET}
+
