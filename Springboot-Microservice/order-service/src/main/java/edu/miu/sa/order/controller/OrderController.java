@@ -3,6 +3,7 @@ package edu.miu.sa.order.controller;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import edu.miu.sa.order.entity.PaymentInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -20,12 +21,21 @@ public class OrderController {
     private OrderService orderService;
 
     @PostMapping
-    public Order saveOrder(@RequestBody Order order, Authentication auth, @RequestHeader("Authorization") String token) {
-        String userId = (String) auth.getPrincipal();
+    public Order placeOrder(@RequestBody Order order, Authentication auth) {
+        Long userId = Long.parseLong ((String)auth.getPrincipal());
         log.info("Inside saveOrder of OrderController");
         log.info("userId: " + userId);
 
-        return orderService.saveOrder(order, Long.parseLong(userId), token);
+        return orderService.placeOrder(order, userId);
+    }
+
+    @PutMapping("/{orderId}/pay")
+    public Order payOrder(@PathVariable Long orderId, @RequestBody PaymentInfo paymentInfo,
+                          @RequestHeader("Authorization") String token) {
+        log.info("Inside payOrder of OrderController");
+        log.info("orderId: " + orderId);
+
+        return orderService.payOrder(orderId, paymentInfo, token);
     }
 
     @GetMapping

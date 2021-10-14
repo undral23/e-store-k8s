@@ -26,7 +26,7 @@ public class Order {
     private Address shippingAddress;
 
     @Embedded
-    @Column(nullable = false)
+    @Column(nullable = true)
     private PaymentInfo paymentInfo;
 
     @Column(nullable = false)

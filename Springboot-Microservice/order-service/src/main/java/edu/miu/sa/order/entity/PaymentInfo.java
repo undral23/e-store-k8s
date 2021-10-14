@@ -1,8 +1,7 @@
 package edu.miu.sa.order.entity;
 
 
-import javax.persistence.Embeddable;
-import javax.persistence.Transient;
+import javax.persistence.*;
 import java.util.Map;
 
 @Embeddable
@@ -10,8 +9,11 @@ public class PaymentInfo {
     private String method;
     private Double amount;
 
-    @Transient
-    private Map<String, Object> data;
+    @ElementCollection
+    @CollectionTable(name = "PAYMENT_INFO_ATTRIBUTES", joinColumns = @JoinColumn(name = "order_id"))
+    @MapKeyColumn(name = "KEY")
+    @Column(name = "VALUE")
+    private Map<String, String> attributes;
 
     public String getMethod() {
         return method;
@@ -29,11 +31,11 @@ public class PaymentInfo {
         this.amount = amount;
     }
 
-    public Map<String, Object> getData() {
-        return data;
+    public Map<String, String> getAttributes() {
+        return attributes;
     }
 
-    public void setData(Map<String, Object> data) {
-        this.data = data;
+    public void setAttributes(Map<String, String> attributes) {
+        this.attributes = attributes;
     }
 }
