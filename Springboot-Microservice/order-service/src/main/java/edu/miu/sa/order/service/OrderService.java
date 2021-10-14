@@ -1,11 +1,15 @@
 package edu.miu.sa.order.service;
 
+import java.lang.reflect.ParameterizedType;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import edu.miu.sa.order.entity.OrderStatus;
+import edu.miu.sa.order.entity.PaymentInfo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -14,7 +18,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import edu.miu.sa.order.entity.Order;
-import edu.miu.sa.order.entity.OrderStatus;
 import edu.miu.sa.order.repository.OrderRepository;
 import lombok.extern.slf4j.Slf4j;
 
@@ -22,94 +25,109 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class OrderService {
 
-	final static String PAYMENT_SERVICE_URL = "http://PAYMENT-SERVICE:9191/payment/";
-	final static String SHIPPING_SERVICE_URL = "http://SHIPPING-SERVICE/shipping";
+    final static String PAYMENT_SERVICE_URL = "http://localhost:9003/transaction/card"; // "http://TRANSACTION-CARD-SERVICE/payment/";
+    final static String SHIPPING_SERVICE_URL = "http://localhost:9003/shipping"; // "http://SHIPPING-SERVICE/shipping/";
 
-	@Autowired
-	private OrderRepository orderRepository;
+    @Autowired
+    private OrderRepository orderRepository;
 
-	@Autowired
-	private RestTemplate restTemplate;
+    @Autowired
+    private RestTemplate restTemplate;
 
-	public Order saveOrder(Order order, Long userId, String token) {
-		log.info("Inside saveUser of UserService");
+    public Order placeOrder(Order order, Long userId) {
+        log.info("Inside placeOrder of OrderService");
 
-		order.setUserId(userId);
-		order.setDateTime(LocalDateTime.now());
-		order.setStatus(OrderStatus.PLACED);
-		order = orderRepository.save(order);
+        order.setUserId(userId);
+        order.setDateTime(LocalDateTime.now());
+        order.setStatus(OrderStatus.PLACED);
+        order = orderRepository.save(order);
 
-		// doing payment
-		doPayment(order, token);
+        return order;
+    }
 
-		// place of the shipment
-		if (order.getStatus() == OrderStatus.PAID) {
-			doShipRequest(order, token);
-		}
+    public Order payOrder(Long orderId, PaymentInfo paymentInfo, String token) {
+        log.info("Inside saveUser of UserService");
 
-		return order;
-	}
+        Order order = orderRepository.findById(orderId).get();
 
-	public List<Order> getAll() {
-		return orderRepository.findAll();
-	}
+        // doing payment
+        doPayment(order, paymentInfo, token);
 
-	public Object doPayment(Order order, String token) {
-		log.info("Inside doPayment of OrderService, OrderID: " + order.getId());
+        // place of the shipment
+        if (order.getStatus() == OrderStatus.PAID) {
+            doShipRequest(order, token);
+        }
 
-		HttpHeaders headers = new HttpHeaders();
-		headers.set("Authorization", token);
+        return order;
+    }
 
-		order.getPaymentInfo().getData().put("amount", order.getPaymentInfo().getAmount());
-		HttpEntity<Object> entityReq = new HttpEntity<Object>(order.getPaymentInfo().getData(), headers);
+    public List<Order> getAll() {
+        return orderRepository.findAll();
+    }
 
-		ResponseEntity<Object> result;
-		result = restTemplate.postForEntity(PAYMENT_SERVICE_URL + order.getPaymentInfo().getMethod(), entityReq,
-				Object.class);
+    public Object doPayment(Order order, PaymentInfo paymentInfo, String token) {
+        log.info("Inside doPayment of OrderService, OrderID: " + order.getId());
 
-		if (result.getStatusCode() == HttpStatus.OK) {
-			order.setStatus(OrderStatus.PAID);
-			Map<String, Object> resBody = (Map<String, Object>) result.getBody();
-			order.getPaymentInfo().getData().put("transactionNumber", resBody.get("transactionNumber"));
+        order.setPaymentInfo(paymentInfo);
+        order = orderRepository.save(order);
 
-			log.info("Payment successful!");
-		} else {
-			order.setStatus(OrderStatus.PAYMENT_FAILED);
-			log.info("Payment failed: " + result.getBody());
-		}
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", token);
 
-		return orderRepository.save(order);
-	}
+        Map<String, String> paymentAttributes = order.getPaymentInfo().getAttributes();
+        paymentAttributes.put("amount", String.valueOf(order.getPaymentInfo().getAmount()));
+        HttpEntity<Object> entityReq = new HttpEntity<Object>(paymentAttributes, headers);
 
-	public Object doShipRequest(Order order, String token) {
-		log.info("Inside doShipRequest of OrderService, OrderID: " + order.getId());
+        ResponseEntity<Object> result;
+        result = restTemplate
+                .postForEntity(PAYMENT_SERVICE_URL,
+                        entityReq,
+                        Object.class);
 
-		HttpHeaders headers = new HttpHeaders();
-		headers.set("Authorization", token);
+        if (result.getStatusCode() == HttpStatus.OK) {
+            order.setStatus(OrderStatus.PAID);
+            Map<String, Object> resBody = (Map<String, Object>) result.getBody();
+            order.getPaymentInfo().getAttributes().put("transactionNumber", String.valueOf(resBody.get("transactionNumber")));
 
-		order.getPaymentInfo().getData().put("amount", order.getPaymentInfo().getAmount());
+            log.info("Payment successful!");
+        } else {
+            order.setStatus(OrderStatus.PAYMENT_FAILED);
+            log.info("Payment failed: " + result.getBody());
+        }
 
-		Map<String, Object> reqData = new HashMap<>();
-		reqData.put("orderId", order.getId());
-		reqData.put("shippingAddress", order.getShippingAddress());
+        return orderRepository.save(order);
+    }
 
-		HttpEntity<Object> entityReq = new HttpEntity<Object>(reqData, headers);
+    public Object doShipRequest(Order order, String token) {
+        log.info("Inside doShipRequest of OrderService, OrderID: " + order.getId());
 
-		ResponseEntity<Object> result;
-		result = restTemplate.postForEntity(SHIPPING_SERVICE_URL, entityReq, Object.class);
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", token);
 
-		if (result.getStatusCode() == HttpStatus.OK) {
-			order.setStatus(OrderStatus.PAID);
-			Map<String, Object> resBody = (Map<String, Object>) result.getBody();
-			order.setShippingInfo(resBody);
-			log.info("Shipping request successful!");
-		} else {
-			order.setStatus(OrderStatus.PAYMENT_FAILED);
-			log.info("Shipping request failed: " + result.getBody());
-		}
+        Map<String, Object> reqData = new HashMap<>();
+        reqData.put("orderId", order.getId());
+        reqData.put("shippingAddress", order.getShippingAddress());
 
-		return orderRepository.save(order);
-	}
+        HttpEntity<Object> entityReq = new HttpEntity<Object>(reqData, headers);
+
+        ResponseEntity<Object> result;
+        result = restTemplate
+                .postForEntity(SHIPPING_SERVICE_URL,
+                        entityReq,
+                        Object.class);
+
+        if (result.getStatusCode() == HttpStatus.OK) {
+            order.setStatus(OrderStatus.SHIP_REQUESTED);
+            Map<String, Object> resBody = (Map<String, Object>) result.getBody();
+            order.setShippingInfo(resBody);
+            log.info("Shipping request successful!");
+        } else {
+            order.setStatus(OrderStatus.SHIP_REQUEST_FAILED);
+            log.info("Shipping request failed: " + result.getBody());
+        }
+
+        return orderRepository.save(order);
+    }
 
 //	public ResponseTemplateVO getUserWithDepartment(Long userId) {
 //		log.info("Inside getUserWithDepartment of UserService");

@@ -4,7 +4,10 @@ public enum OrderStatus {
     PLACED("PLACED"),
     PAID("PAID"),
     PAYMENT_FAILED("PAYMENT_FAILED"),
-    SHIPPED("SHIPPED");
+    SHIP_REQUESTED("SHIP_REQUESTED"),
+    SHIP_REQUEST_FAILED("SHIP_REQUEST_FAILED"),
+    SHIPPED("SHIPPED")
+    ;
 
     private final String text;
 
