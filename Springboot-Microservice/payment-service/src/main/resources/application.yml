@@ -10,7 +10,7 @@ spring:
         - id: TRANSACTION-CARD-SERVICE
           uri: lb://TRANSACTION-CARD-SERVICE
           predicates:
-            - Path=/payment/card/**
+            - Path=/payment/card, /payment/card/**
           filters:
             - name: CircuitBreaker
               args:
@@ -19,7 +19,7 @@ spring:
         - id: TRANSACTION-PAYPAL-SERVICE
           uri: lb://TRANSACTION-PAYPAL-SERVICE
           predicates:
-            - Path=/payment/paypal/**
+            - Path=/payment/paypal, /payment/paypal/**
           filters:
             - name: CircuitBreaker
               args:

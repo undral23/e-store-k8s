@@ -55,4 +55,8 @@ spec:
               secretKeyRef:
                 name: account-secret
                 key: password     
-        
+          - name: JWT_SECRET # Setting Database password from Secret
+            valueFrom:
+              secretKeyRef:
+                name: jwt-secret
+                key: value        
