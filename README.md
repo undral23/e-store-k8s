@@ -74,4 +74,59 @@ Test API services:
 curl -X GET http://localhost:9191/products -H 'content-type: application/json'
 ```
 
+```sh
+curl -X POST \
+  http://localhost:9191/order \
+  -H 'authorization: Bearer $TOKEN' \
+  -H 'cache-control: no-cache' \
+  -H 'content-type: application/json' \
+  -H 'postman-token: 03be6ff9-5ab4-7fed-1fac-534b2c5520c0' \
+  -d '{
+    "items": [
+        {
+            "productId": 1,
+            "quantity": 1,
+            "unitPrice": 100
+        }
+    ],
+    "shippingAddress": {
+        "line1": "Firsname Lastname",
+        "line2": "1000 N. 4th St.",
+        "city": "Fairfield",
+        "state": "IA",
+        "zip": "52556",
+        "country": "United States"
+    }
+}'
 
+curl -X PUT \
+  http://localhost:9191/order/1/pay \
+  -H 'authorization: Bearer $TOKEN' \
+  -H 'content-type: application/json' \
+-d '{
+    "method": "card",
+    "amount": 100,
+    "attributes": {
+        "cardNumber": "1111-2222-3333",
+        "CVV": "123",
+        "exp": "06/22"
+    }
+}'
+
+curl -X GET \
+  http://localhost:9191/order \
+  -H 'authorization: Bearer $TOKEN' \
+  -H 'content-type: application/json' 
+  
+
+curl -X GET \
+  http://localhost:9191/shipping \
+  -H 'authorization: Bearer $TOKEN' \
+  -H 'content-type: application/json' 
+  
+
+curl -X PUT \
+  http://localhost:9191/shipping/1/ship \
+  -H 'authorization: Bearer $TOKEN' \
+  -H 'content-type: application/json'
+```
