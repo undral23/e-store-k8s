@@ -1,8 +1,6 @@
 # e-store
 ## Software architecture mini project 2
 
-Team members: Munkh-Undral Erdenebayar, Tumurjin Arildii, Saruulgun Chinzorigt
-
 Microservices:
 - Account service
 - Product service
@@ -76,11 +74,26 @@ curl -X GET http://localhost:9191/products -H 'content-type: application/json'
 
 ```sh
 curl -X POST \
+  http://localhost:9191/signup \
+  -H 'content-type: application/json' \
+  -d '{
+    "username": "user",	
+	"password": "123", 
+	"email": "email@email.com"
+}'
+
+curl -X POST \
+  http://localhost:9191/authenticate \
+  -H 'content-type: application/json' \
+  -d '{
+    "username": "user",	
+	"password": "123"
+}'
+
+curl -X POST \
   http://localhost:9191/order \
   -H 'authorization: Bearer $TOKEN' \
-  -H 'cache-control: no-cache' \
   -H 'content-type: application/json' \
-  -H 'postman-token: 03be6ff9-5ab4-7fed-1fac-534b2c5520c0' \
   -d '{
     "items": [
         {
